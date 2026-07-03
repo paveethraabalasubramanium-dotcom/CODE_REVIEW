@@ -122,25 +122,56 @@ Detects readability issues:
 # Project Structure
 
 ```bash
-CodePulse-AI/
-│
-├── frontend/
-│   ├── src/
-│   ├── public/
-│   └── package.json
+codepulse-ai/
 │
 ├── backend/
 │   ├── src/
 │   │   ├── ai_v2/
-│   │   ├── controllers/
-│   │   ├── routes/
-│   │   ├── engine/
+│   │   │   ├── analyzers/
+│   │   │   │   ├── correctnessAnalyzer.js
+│   │   │   │   └── scoreAnalyzer.js
+│   │   │   ├── prompts/
+│   │   │   │   ├── correctnessPrompt.js
+│   │   │   │   └── scoringPrompt.js
+│   │   │   ├── utils/
+│   │   │   │   └── extractJson.js
+│   │   │   └── geminiClientV2.js
+│   │   │
 │   │   ├── core/
+│   │   │   └── languageDetector.js
+│   │   │
+│   │   ├── controllers/
+│   │   │   └── analyze.controller.js
+│   │   │
+│   │   ├── routes/
+│   │   │   └── analyze.routes.js
+│   │   │
+│   │   ├── engine/
+│   │   │   ├── scoreEngine.js
+│   │   │   └── reportBuilder.js
+│   │   │
+│   │   ├── pipeline/
+│   │   │   └── analysisPipeline_v2.js
+│   │   │
 │   │   └── server.js
 │   │
-│   ├── .env
-│   └── package.json
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── .env.example
+│   └── README.md
 │
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   │
+│   ├── package.json
+│   └── README.md
+│
+├── .gitignore
 └── README.md
 ```
 
