@@ -1,4 +1,4 @@
-# CodePulse AI
+# Code_Review
 
 CodePulse AI is an AI-powered code quality analysis platform that evaluates source code across multiple dimensions using static analysis, rule-based detection, and LLM-assisted reasoning.
 
