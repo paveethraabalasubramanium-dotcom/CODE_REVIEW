@@ -1,0 +1,294 @@
+/* ================= GLOBAL ================= */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: linear-gradient(135deg, #fcfaff 0%, #f5f0ff 50%, #ede4ff 100%);
+}
+
+.app-shell {
+  min-height: 100vh;
+  color: #3b2f63;
+}
+
+/* ================= HERO ================= */
+
+.hero-banner {
+  background: linear-gradient(135deg, #b794f4, #d6bcfa);
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(124, 58, 237, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.hero-banner h1 {
+  color: #ffffff !important;
+}
+
+.hero-banner p {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.hero-banner .badge {
+  font-weight: 500;
+}
+
+/* ================= PANELS ================= */
+
+.code-panel,
+.analysis-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+  border-radius: 28px;
+  padding: 28px;
+  border: 1px solid #ddd6fe;
+  box-shadow: 0 16px 40px rgba(167, 139, 250, 0.15);
+}
+
+.code-panel h2,
+.analysis-panel h2,
+.analysis-panel h5,
+.analysis-panel h6 {
+  color: #4c1d95 !important;
+}
+
+.code-panel p,
+.analysis-panel p,
+.text-muted,
+.small {
+  color: #6d28d9 !important;
+}
+
+/* ================= EDITOR ================= */
+
+.editor-textarea {
+  min-height: 420px;
+  resize: vertical;
+  font-family: Consolas, monospace;
+  background: #faf5ff;
+  color: #4c1d95;
+  border: 1px solid #c4b5fd;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.editor-textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.15);
+}
+
+.code-panel .form-select {
+  border-color: #c4b5fd;
+}
+
+/* ================= LANGUAGE BADGE ================= */
+
+.language-badge {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  border: 1px solid #c4b5fd;
+  color: #4c1d95;
+}
+
+.language-badge-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #7c3aed;
+}
+
+.language-badge-value {
+  font-weight: 700;
+  color: #4c1d95;
+}
+
+/* ================= SCORE CARDS ================= */
+
+.score-card {
+  background: white;
+  border: 1px solid #ddd6fe;
+  border-radius: 24px;
+  padding: 24px;
+  min-height: 220px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.12);
+}
+
+.score-card:hover {
+  transform: translateY(-4px);
+  transition: 0.25s ease;
+}
+
+.score-card-large {
+  min-height: 280px;
+}
+
+/* FORCE ALL SCORE TEXT COLORS */
+.score-card,
+.score-card * {
+  color: #4c1d95 !important;
+}
+
+.score-card .text-muted,
+.score-card .small {
+  color: #7c3aed !important;
+}
+
+/* ================= SCORE RINGS ================= */
+
+.score-ring {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.score-card-large .score-ring {
+  width: 180px;
+  height: 180px;
+}
+
+.score-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--progress-color, #8b5cf6) calc(var(--score) * 1%),
+    #ede9fe 0%
+  );
+  z-index: 1;
+}
+
+.score-ring::after {
+  content: "";
+  position: absolute;
+  width: 84%;
+  height: 84%;
+  background: white;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.score-ring-inner {
+  position: relative;
+  z-index: 999;
+}
+
+.score-ring-inner * {
+  color: #4c1d95 !important;
+}
+
+.score-ring .fs-3,
+.score-ring .fw-bold {
+  color: #4c1d95 !important;
+  font-weight: 800 !important;
+  position: relative;
+  z-index: 9999;
+}
+
+.letter-spacing-1 {
+  letter-spacing: 1px;
+}
+
+/* ================= BUTTONS ================= */
+
+.btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.btn-outline-light {
+  color: #6d28d9;
+  border-color: #c4b5fd;
+}
+
+.btn-outline-light:hover {
+  background: #ede9fe;
+  color: #4c1d95;
+}
+
+/* ================= ISSUE PANEL ================= */
+
+.issue-group {
+  margin-top: 20px;
+}
+
+.issue-group .card {
+  background: #faf5ff !important;
+  border: 1px solid #ddd6fe !important;
+}
+
+.issue-group .card-header {
+  background: #f3e8ff !important;
+}
+
+.issue-group h5 {
+  color: #4c1d95 !important;
+}
+
+.issue-group p {
+  color: #5b21b6 !important;
+}
+
+.list-group-item {
+  background: transparent !important;
+}
+
+/* ================= TOAST ================= */
+
+.toast-overlay {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 9999;
+}
+
+.toast {
+  background: #7c3aed !important;
+  color: white;
+  border-radius: 16px;
+}
+
+.toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.25s ease;
+}
+
+.toast-overlay:not(.toast-visible) {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 991px) {
+  .editor-textarea {
+    min-height: 320px;
+  }
+
+  .score-ring {
+    width: 100px;
+    height: 100px;
+  }
+
+  .score-card-large .score-ring {
+    width: 150px;
+    height: 150px;
+  }
+}
