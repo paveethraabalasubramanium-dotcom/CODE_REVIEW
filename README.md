@@ -163,6 +163,16 @@ codepulse-ai/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── CodeEditor.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── ScoreCard.jsx
+│   │   │   ├── IssuePanel.jsx
+│   │   │   ├── LanguageBadge.jsx
+│   │   │   ├── AnalysisSummary.jsx
+│   │   │   └── Loader.jsx
+│   │   │
+│   │   ├── engine/
+│   │   │   └── issueNormalizer.js
 │   │   ├── services/
 │   │   │   └── api.js
 │   │   ├── App.jsx
