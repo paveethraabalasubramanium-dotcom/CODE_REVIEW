@@ -16,117 +16,11 @@ const VALID_SEVERITIES = [
   "LOW"
 ];
 
-/*
- * Detect hardcoded final output instead of computed result
- */
-function detectHardcodedOutput(code, language) {
-  const patterns = {
-    python: [
-      /^\s*print\s*\(\s*["']?\d+["']?\s*\)\s*$/m
-    ],
-    javascript: [
-      /^\s*console\.log\s*\(\s*["']?\d+["']?\s*\)\s*;?\s*$/m
-    ],
-    java: [
-      /^\s*System\.out\.println\s*\(\s*["']?\d+["']?\s*\)\s*;\s*$/m
-    ],
-    cpp: [
-      /^\s*cout\s*<<\s*\d+\s*(<<\s*endl)?\s*;\s*$/m
-    ],
-    c: [
-      /^\s*printf\s*\(\s*["']?\d+["']?\s*\)\s*;\s*$/m
-    ]
-  };
-
-  const languagePatterns = patterns[language] || [];
-  return languagePatterns.some((pattern) => pattern.test(code));
-}
-
-/*
- * Ignore false positive magic numbers
- */
-function isFalsePositiveMagicNumber(issue, code) {
-  if (
-    issue.type !== "MAINTAINABILITY" ||
-    issue.rule !== "magic-number"
-  ) {
-    return false;
-  }
-
-  const lines = code.split("\n");
-  const line = lines[(issue.line || 1) - 1] || "";
-  const trimmed = line.trim();
-
-  const safePatterns = [
-    /^[a-zA-Z_]\w*\s*=\s*\d+(\.\d+)?$/,
-    /^[a-zA-Z_]\w*\s*,/,
-    /range\s*\(\s*\d+\s*\)/,
-    /for\s*\(.*\d+.*\)/,
-    /^\s*print\s*\(\s*\d+\s*\)\s*$/
-  ];
-
-  return safePatterns.some((pattern) => pattern.test(trimmed));
-}
-
-/*
- * Detect business-logic magic numbers and GROUP them
- */
-function detectMagicNumbers(code) {
-  const lines = code.split("\n");
-  const foundNumbers = [];
-  let firstLine = null;
-
-  lines.forEach((line, index) => {
-    const trimmed = line.trim();
-
-    const businessLogicPatterns = [
-      /if\s+.*[<>!=]=?\s*\d+/,
-      /[+\-*/]\s*\d+(\.\d+)?/,
-      /=.*[+\-*/].*\d+/
-    ];
-
-    const matched = businessLogicPatterns.some((pattern) =>
-      pattern.test(trimmed)
-    );
-
-    if (!matched) return;
-
-    const matches = trimmed.match(/\b\d+(\.\d+)?\b/g);
-
-    if (matches) {
-      foundNumbers.push(...matches);
-
-      if (firstLine === null) {
-        firstLine = index + 1;
-      }
-    }
-  });
-
-  if (!foundNumbers.length) {
-    return [];
-  }
-
-  const uniqueNumbers = [...new Set(foundNumbers)];
-
-  return [
-    {
-      type: "MAINTAINABILITY",
-      severity:
-        uniqueNumbers.length >= 2 ? "MEDIUM" : "LOW",
-      line: firstLine || 1,
-      rule: "magic-number",
-      message:
-        `Hardcoded numeric literals (${uniqueNumbers.join(", ")}) ` +
-        `are used directly in business logic. Replace them with named constants.`
-    }
-  ];
-}
-
 function validateIssues(issues = []) {
   if (!Array.isArray(issues)) return [];
 
   return issues
-    .filter((issue) => issue && typeof issue === "object")
+    .filter(Boolean)
     .map((issue) => ({
       type: VALID_TYPES.includes(issue.type)
         ? issue.type
@@ -153,59 +47,166 @@ function validateIssues(issues = []) {
     }));
 }
 
-/*
- * Merge AI issues + deterministic rule issues
- */
-function injectRuleBasedIssues(
-  code,
-  language,
-  issues,
-  correctness
-) {
+/* ---------- LOOP DETECTION ---------- */
+
+function detectNestedLoops(code) {
+  const lines = code.split("\n");
+
+  let depth = 0;
+  let maxDepth = 0;
+  let firstLine = 1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    const isLoop =
+      /^for\s*\(/.test(line) ||
+      /^while\s*\(/.test(line) ||
+      /^for\s+/.test(line) ||
+      /^while\s+/.test(line);
+
+    if (isLoop) {
+      depth++;
+
+      if (depth > maxDepth) {
+        maxDepth = depth;
+        firstLine = i + 1;
+      }
+    }
+
+    if (line.includes("}")) {
+      depth = Math.max(0, depth - 1);
+    }
+  }
+
+  if (maxDepth >= 3) {
+    return [{
+      type: "PERFORMANCE",
+      severity: "HIGH",
+      line: firstLine,
+      rule: "o-n-cube",
+      message:
+        "Triple nested loops detected. Estimated O(n³) complexity."
+    }];
+  }
+
+  if (maxDepth >= 2) {
+    return [{
+      type: "PERFORMANCE",
+      severity: "MEDIUM",
+      line: firstLine,
+      rule: "o-n-square",
+      message:
+        "Nested loops detected. Estimated O(n²) complexity."
+    }];
+  }
+
+  return [];
+}
+
+/* ---------- RECURSION DETECTION ---------- */
+
+function detectRecursion(code) {
+  const functionDefs = [
+    /function\s+([a-zA-Z_]\w*)\s*\(/g,
+    /def\s+([a-zA-Z_]\w*)\s*\(/g,
+    /\b(?:int|void|float|double|long|char|bool|string)\s+([a-zA-Z_]\w*)\s*\(/gi
+  ];
+
+  const functionNames = [];
+
+  for (const regex of functionDefs) {
+    let match;
+    while ((match = regex.exec(code)) !== null) {
+      functionNames.push(match[1]);
+    }
+  }
+
+  for (const name of functionNames) {
+    const callRegex = new RegExp(
+      `\\b${name}\\s*\\(`,
+      "g"
+    );
+
+    const matches = code.match(callRegex) || [];
+
+    if (matches.length >= 2) {
+      return [{
+        type: "PERFORMANCE",
+        severity: "MEDIUM",
+        line: 1,
+        rule: "recursive-overhead",
+        message:
+          "Recursive implementation may cause stack overhead."
+      }];
+    }
+  }
+
+  return [];
+}
+
+/* ---------- DEDUP ---------- */
+
+function normalizePerformanceIssues(issues) {
+  const performance = issues.filter(
+    i => i.type === "PERFORMANCE"
+  );
+
+  const others = issues.filter(
+    i => i.type !== "PERFORMANCE"
+  );
+
+  const hasCube = performance.some(
+    i => i.rule === "o-n-cube"
+  );
+
+  if (hasCube) {
+    return [
+      ...others,
+      ...performance.filter(
+        i => i.rule === "o-n-cube"
+      )
+    ];
+  }
+
+  return issues;
+}
+
+function dedupeIssues(issues) {
+  return issues.filter(
+    (issue, index, arr) =>
+      index ===
+      arr.findIndex(
+        x =>
+          x.type === issue.type &&
+          x.rule === issue.rule
+      )
+  );
+}
+
+function injectRuleBasedIssues(code, issues) {
   let finalIssues = [...issues];
 
-  /*
-   * Remove false positive magic number reports
-   */
-  finalIssues = finalIssues.filter(
-    (issue) =>
-      !isFalsePositiveMagicNumber(issue, code)
-  );
+  const performanceIssues = [
+    ...detectNestedLoops(code),
+    ...detectRecursion(code)
+  ];
 
-  /*
-   * Hardcoded output detection
-   */
-  const alreadyHasHardcoded = finalIssues.some(
-    (issue) => issue.rule === "hardcoded-output"
-  );
+  for (const issue of performanceIssues) {
+    const exists = finalIssues.some(
+      x => x.rule === issue.rule
+    );
 
-  if (
-    correctness?.isCorrect === false &&
-    detectHardcodedOutput(code, language) &&
-    !alreadyHasHardcoded
-  ) {
-    finalIssues.push({
-      type: "LOGIC",
-      severity: "HIGH",
-      line: 1,
-      rule: "hardcoded-output",
-      message:
-        "Code directly prints hardcoded output instead of computing required result."
-    });
+    if (!exists) {
+      finalIssues.push(issue);
+    }
   }
 
-  /*
-   * Magic number detection (grouped)
-   */
-  const magicIssues = detectMagicNumbers(code);
+  finalIssues =
+    normalizePerformanceIssues(finalIssues);
 
-  const alreadyHasMagic = finalIssues.some(
-    (issue) => issue.rule === "magic-number"
-  );
-
-  if (!alreadyHasMagic && magicIssues.length) {
-    finalIssues.push(magicIssues[0]);
-  }
+  finalIssues =
+    dedupeIssues(finalIssues);
 
   return finalIssues;
 }
@@ -222,30 +223,29 @@ export async function runScoreAnalysis(
       correctness
     );
 
-    const rawResponse = await askGeminiV2(prompt);
-    const jsonText = extractJson(rawResponse);
+    const rawResponse =
+      await askGeminiV2(prompt);
+
+    const jsonText =
+      extractJson(rawResponse);
 
     if (!jsonText) {
       throw new Error(
-        "Failed to extract JSON from Gemini response"
+        "Failed to extract JSON"
       );
     }
 
-    const parsed = JSON.parse(jsonText);
+    const parsed =
+      JSON.parse(jsonText);
 
-    let validatedIssues = validateIssues(
-      parsed.issues || []
-    );
+    let issues =
+      validateIssues(parsed.issues || []);
 
-    validatedIssues = injectRuleBasedIssues(
-      code,
-      language,
-      validatedIssues,
-      correctness
-    );
+    issues =
+      injectRuleBasedIssues(code, issues);
 
     return {
-      issues: validatedIssues,
+      issues,
       rawResponse
     };
   } catch (error) {
