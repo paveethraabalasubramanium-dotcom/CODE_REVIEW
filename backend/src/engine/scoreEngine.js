@@ -6,8 +6,8 @@ const SEVERITY_PENALTIES = {
 };
 
 const SCORE_WEIGHTS = {
-  bug: 0.20,
-  logic: 0.50,
+  bug: 0.30,
+  logic: 0.40,
   performance: 0.15,
   maintainability: 0.15
 };
@@ -17,9 +17,18 @@ function clamp(v) {
 }
 
 export function calculateScores(input) {
-  const issues = Array.isArray(input)
-    ? input
-    : input?.issues || [];
+ let issues = Array.isArray(input)
+  ? input
+  : input?.issues || [];
+
+issues = issues.filter(
+  (issue, index, arr) =>
+    index === arr.findIndex(
+      x =>
+        x.type === issue.type &&
+        x.rule === issue.rule
+    )
+);
 
   let bug = 0;
   let logic = 0;
