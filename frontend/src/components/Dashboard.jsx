@@ -43,11 +43,12 @@ export default function Dashboard({ data, displayLanguage, showIssues, onToggleI
 
         {!isUnknownLanguage && (
           <div className="row g-3 mb-4">
-            <div className="col-6 col-sm-6 col-lg-3">
-              <ScoreCard label="Bug" score={scores.bugScore} />
-            </div>
+            
             <div className="col-6 col-sm-6 col-lg-3">
               <ScoreCard label="Logic" score={scores.logicScore} />
+            </div>
+            <div className="col-6 col-sm-6 col-lg-3">
+              <ScoreCard label="Bug" score={scores.bugScore} />
             </div>
             <div className="col-6 col-sm-6 col-lg-3">
               <ScoreCard label="Performance" score={scores.performanceScore} />
